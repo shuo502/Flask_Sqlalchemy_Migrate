@@ -1,0 +1,15 @@
+数据库迁移
+flask命令依赖于FLASK_APP环境变量来知道Flask应用入口在哪里  你需要设置FLASK_APP = microblog.py
+但是在运行之前，需要通过设置FLASK_APP环境变量告诉Flask如何导入它：
+    (venv) $ export FLASK_APP=microblog.py
+或者
+    pip install python-dotenv
+    此时，在项目的根目录下新建一个名为 .flaskenv 的文件，其内容是：
+    FLASK_APP=microblog.py
+
+ flask db init
+初始化数据库
+ flask db migrate -m "users table"
+ 迁移
+ flask db upgrade
+ 应用迁移
