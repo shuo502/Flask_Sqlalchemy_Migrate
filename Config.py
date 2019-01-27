@@ -1,3 +1,4 @@
+#conding=utf-8
 import os
 from key import key
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -7,6 +8,7 @@ mysql_config='mysql+pymysql://{}:{}@{}:3306/{}?charset=utf8'.format(key[0],key[1
 sqlite_config='sqlite:///' + os.path.join(basedir, 'app.db')
 # print(mysql_config)
 class Config(object):
+    SECRET_KEY='development key',
     # ...
     # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or   sqlite_config
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or   mysql_config

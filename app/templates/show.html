@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    {% for message in get_flashed_messages() %}
+    <div class=flash>{{ message }}</div>
+    {% endfor %}
+
+1
+插入
+
+<form action="{{ url_for('insert_markbook') }}" method=post class=insert_markbook>
+    <dl>
+        <dt>Title:
+        <dd><input type=text size=30 name=title>
+        <dt>Link:
+        <dd><input type=text size=255 name=links>
+        <dd><input type=submit value=submit>
+    </dl>
+</form>
+
+{% if markbooks %}
+{#    {% for markbook in markbooks | sort(attribute="age", reverse=true) %}#}
+    {% for markbook in markbooks %}
+           {{ markbook.id }}, {{ markbook.title }}, {{ markbook.links }} </br>
+    {% endfor %}
+{% endif %}
+</body>
+</html>

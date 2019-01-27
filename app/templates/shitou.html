@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="https://img.hcharts.cn/jquery/jquery-1.8.3.min.js"></script>
+    {#    <script type="text/javascript">#}
+    {#        function f() {     // 获取json数据#}
+    {#            $.getJSON(url,function(data){#}
+    {#            $.getJSON("http://127.0.0.1:5000/status", function (results) {#}
+    {#                var result=results#}
+    {#                console.log(result);#}
+    {#                if (document.getElementById("p1")) {#}
+    {#                    document.getElementById("p1").innerHTML = result.r;#}
+    {#                };#}
+    {##}
+    {#                               if (document.getElementById("statusid")) {document.getElementById("statusid").innerText = result.statusid ;};#}
+    {#                               if (document.getElementById("status_zhuangtai")) { document.getElementById("status_zhuangtai").innerText = result.status_zhuangtai ;};#}
+    {#                               if (document.getElementById("status_time")) { document.getElementById("status_time").innerText = result.status_time ;};#}
+    {#                               if (document.getElementById("statusid")) { document.getElementById("statusid").innerText = result.statusid ;};#}
+    {#                               if (document.getElementById("status_now")) { document.getElementById("status_now").innerText = result.status_now ;};#}
+    {##}
+    {#            });#}
+    {#        }     //每隔1秒自动调用方法，更新#}
+    {#        window.setInterval(f, 10);#}
+    {#    </script>#}
+
+
+    <script type="text/javascript">
+        var t1 = "";
+        var t2="";
+        alert
+        function f() {
+            // 获取json数据
+
+            $.getJSON("/status", function (result) {
+                document.getElementById("p1").innerHTML = result.r;
+                document.getElementById("statusid").innerText = result.statusid;
+{#                if (t1 !=result.statusid){#}
+{#                    t1=result.statusid;#}
+{#                    t2=document.getElementById("status_open").innerHTML;#}
+{##}
+{#                    document.getElementById("status_open").innerHTML = result.status_open+"</br">+t2;#}
+{##}
+{#                };#}
+                 document.getElementById("status_open").innerHTML = result.status_open;
+                document.getElementById("status_now").innerText = result.status_now;
+                document.getElementById("status_time").innerText = result.status_time;
+                document.getElementById("status_zhuangtai").innerText = result.status_zhuangtai;
+            });
+        }
+        //每隔1秒自动调用方法，更新
+        window.setInterval(f, 1000);
+
+    </script>
+</head>
+
+
+<body>
+statusid=
+status_zhuangtai=
+status_open=""
+status_time=""
+登陆,匿名
+状态
+<p id="status_open"></p>
+<p id="statusid"></p>
+<p id="status_time"></p>
+<p id="status_now"></p>
+<p id="status_zhuangtai"></p>
+
+
+
+<div id="p1"></div>
+数据<p id="p2"></p>
+
+获取状态
+
+
+更新选择数据
+</body>
+</html>
