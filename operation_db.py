@@ -4,7 +4,9 @@ from app import db
 
 def select_user():
     markbooks= User.query.order_by(User.id.desc()).all()
-
+    markbooks= User.query.order_by(User.id.desc()).limit(10).all()
+    page_size,page_index=1 ,10
+    db.session.query(User.name).filter(User.email.like('%' + email + '%')).limit(page_size).offset( (page_index - 1) * page_size)
     # 查询所有用户
     users_list = User.query.all()
 
@@ -86,3 +88,14 @@ default                 为这列定义默认值
 doc                      字段说明
 
 """
+
+'''
+
+上面说了设置与获取session
+那么如何删除session呢？
+可以直接使用session.pop('key',None) 即：
+session.pop('name',None)
+如果要删除session中所有数据使用：clear()即：
+session.clear()
+
+'''

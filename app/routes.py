@@ -8,7 +8,7 @@ from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash,make_response
 from werkzeug.utils import secure_filename
 
-statusid=int()
+statusid=int(0)
 status_zhuangtai=""
 status_open=""
 status_time=""
@@ -63,75 +63,131 @@ def cookies():
     return response
 
 @app.route('/login')
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    # us=request.get_data()
-    us= request.args['login']
-    name = request.cookies.get('name')  # 获取cookie
-    if name==None:
-        if us=="":
-            return url_for(login)
-        elif us=="":
-            response = make_response()
-            response.set_cookie('name', 'davidszhou')
-            pass
+    error = None
+    if request.method == 'POST':
+        ts = User.filter(username=request.form['username'])
+        if ts:
+            if request.form['password'] != ts[0].password:
+                error = 'Invalid password'
+                pass
+            else:
+                print(ts[0])
+                session['user'] = ts[0].username
+                session['id'] = ts[0].id
+                session['is_admin'] = ts[0].is_admin
+                session['mail'] =  ts[0].mail
+                print("--")
+                session['logged_in'] = True
+                flash('You were logged in')
+                print(session.get('user'))
+                return redirect(url_for('show_entries'))
+        else:
+            error = 'Invalid username'
+    return render_template('login.html', error=error)
+
+#
+# def login():
+#     # us=request.get_data()
+#     us= request.args['login']
+#     name = request.cookies.get('name')  # 获取cookie
+#     if name==None:
+#         if us=="":
+#             return url_for(login)
+#         elif us=="":
+#             response = make_response()
+#             response.set_cookie('name', 'davidszhou')
+#             pass
+#
+@app.route('/logins')
+def logins():
+    a = int(random.randint(100000, 999999))
+    session['username'] = a
+    print(session.get('userkey'))
+    s = User()
+    s.username=a
+    s.password="123456"
+    db.session.add(s)
+    db.session.flush()
+    session['userid'] = s.id
+    db.session.commit()
+    print("create user id "+str(s.id))
+    return redirect(url_for('shitouindex'))
+
 @app.route('/')
 def shitouindex():
+
+    if session.get('userid')is None:
+        return redirect(url_for('logins'))
+
+        # session['userid'] = a
+
+        # username=int(session)
+        # userid = int(session.get['userid'])
+    # userid = int(session.get['userid'])
     return render_template('shitou.html')
 
 @app.route('/status')
 def status():
     global statusid, status_open,status_zhuangtai,status_time
-    '''开奖时间'''
-    s=['张三','年龄','姓名']
     t={}
-    t['data']=s
-
     shows=None
-    try:
-        # shows = nbStatus.query.order_by(nbStatus.id).
-        shows = nbStatus.query.filter_by(status=True).order_by(nbStatus.id.desc()).first()
-        # print(shows)
-    except Exception:
-        s=nbStatus()
-        s.status=True
-        db.session.add(s)
-        db.session.flush()
-        statusid=s.id
-        db.session.commit()
-        statusid, status_open,status_zhuangtai,status_time=s.id,"","尽快选择",s.datetimes+datetime.timedelta(days=0, seconds=8,  minutes=0, hours=0)
-        # return "开奖期数"+str(s.id)
-    if shows is None:
-        s=nbStatus()
-        s.status=True
-        db.session.add(s)
-        db.session.flush()
-        db.session.commit()
-        statusid=s.id
-        statusid, status_open,status_zhuangtai,status_time=s.id,"","尽快选择",s.datetimes+datetime.timedelta(days=0, seconds=8,  minutes=0, hours=0)
-        # return "xx"+str(s.id)
-    elif shows.status:
-        statusid=shows.id
+    if statusid !=0 and status_time>datetime.datetime.utcnow()  :
+        t['statusid'] = str(statusid)
+        t['status_open'] = str(status_open)
+        t['status_zhuangtai'] = str(status_zhuangtai)
+        t['status_time'] = str(status_time)
+        t['status_now'] = str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+        t['r'] = str(random.random())
+        return json.dumps(t, ensure_ascii=False)
 
-        t1=shows.datetimes+datetime.timedelta(days=0, seconds=8,  minutes=0, hours=0)
-        t2=shows.datetimes+datetime.timedelta(days=0, seconds=10,  minutes=0, hours=0)
-        status_time=t1
-        if datetime.datetime.utcnow()<t2 and datetime.datetime.utcnow()>t1 :
-            status_zhuangtai="结算"
-            #结算
-            if len(status_open)==0:
-                status_open=fun(statusid)
-                print(status_open)
-                shows.op=str(status_open)
-                db.session.commit()
-        elif datetime.datetime.utcnow()>t2  :
-            status_zhuangtai="结束"
-            #kai
-            shows.status=False
-            status_open=''
+    else:
+        try:
+            # shows = nbStatus.query.order_by(nbStatus.id).
+
+            shows = nbStatus.query.filter_by(status=True).order_by(nbStatus.id.desc()).first()
+            # print(shows)
+        except Exception:
+            shows=nbStatus()
+            shows.status=True
+            db.session.add(shows)
+            db.session.flush()
+            statusid=shows.id
             db.session.commit()
-            # return "time over"
-        else:
-            status_zhuangtai="尽快选择"
+            statusid, status_open,status_zhuangtai,status_time=shows.id,"","尽快选择",shows.datetimes+datetime.timedelta(days=0, seconds=8,  minutes=0, hours=0)
+            # return "开奖期数"+str(s.id)
+        if shows is None:
+            s=nbStatus()
+            s.status=True
+            db.session.add(s)
+            db.session.flush()
+            db.session.commit()
+            statusid=s.id
+            statusid, status_open,status_zhuangtai,status_time=s.id,"","尽快选择",s.datetimes+datetime.timedelta(days=0, seconds=8,  minutes=0, hours=0)
+            # return "xx"+str(s.id)
+        elif shows.status:
+            statusid=shows.id
+            t1=shows.datetimes+datetime.timedelta(days=0, seconds=8,  minutes=0, hours=0)
+            t2=shows.datetimes+datetime.timedelta(days=0, seconds=10,  minutes=0, hours=0)
+            status_time=t1
+            if datetime.datetime.utcnow()<t2 and datetime.datetime.utcnow()>t1 :
+                status_zhuangtai="结算"
+                #结算
+                if len(status_open)==0:
+                    status_open=fun(statusid)
+                    print(status_open)
+                    shows.op=str(status_open)
+                    db.session.commit()
+            elif datetime.datetime.utcnow()>t2  :
+                status_zhuangtai="结束"
+                #kai
+                shows.status=False
+                db.session.commit()
+                # return "time over"
+            else:
+                status_zhuangtai="尽快选择"
         # print(shows.datetimes)
     t['statusid']=str(statusid)
     t['status_open']=str(status_open)
@@ -143,29 +199,40 @@ def status():
     # print((datetime.datetime.utcnow()+datetime.timedelta(days=0, seconds=0, microseconds=0, milliseconds=0, minutes=0, hours=8, weeks=0)).strftime("%Y-%m-%d %H:%M:%S"))
     # return str(shows.id)+str(shows.datetimes)
 
+@app.route('/clean')
+def clean():
+    session.clear()
+    return "clear succeed"
+
+
 @app.route('/updatebuy/<int:nb>',methods=['POST'])
 def updatebuy(nb):
     '''修改 插入'''
+
     nb=int(nb)
+    print(nb)
     b= request.form['buy'].encode('utf-8')
     m= request.form['m'].encode('utf-8')
-    userid=int(session.get['userid'])
+    print(b,m)
+    userid=int(session.get('userid'))
+    print(userid)
     #提前2秒结算，停止更新
     if nbStatus.query.filter_by(id=nb).first().status:
-        shitou = Shitou.query.filter_by(id=userid , nb=nb).first()
+        shitou = Shitou.query.filter_by(userid=userid , nb=nb).first()
         if shitou:
-            shitou.buy =b
-            shitou.m = m
+            shitou.buy =int(b)
+            shitou.m = int(m)
             db.session.commit()
         else:
             shitou = Shitou()
             shitou.nb=nb
-            shitou.id = userid
-            shitou.buy = b
-            shitou.m = m
+            shitou.userid = userid
+            shitou.buy = int(b)
+            shitou.m = int(m)
             db.session.add(shitou)
             db.session.commit()
         pass
+    return "succeed "+str(m)
 
 # @app.route('/')
 # def show_entries():

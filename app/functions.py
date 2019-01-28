@@ -30,15 +30,16 @@ def fun(id):
     s=Shitou.query.filter_by(nb=statusid).all()
     if s:
         for i in s:
-            if i.buy==1:
+            if str(i.buy)==str(1):
                 x1=x1+1
-            if i.buy==2:
+            if str(i.buy)==str(2):
                 x2=x2+1
-            if i.buy==3:
+            if str(i.buy)==str(3):
                 x3=x3+1
         a,b,c=f_shitou(x1,x2,x3)
     n=x1+x2+x3
-    return str('总计参与{} 石头{},剪刀{},布{}'.format(n,a,b,c)).encode('utf-8')
+    x=[x1,x2,x3]
+    return str('总计参与{} 石头{},剪刀{},布{}:{}'.format(n,a,b,c,x))
 
 
 def f_show():
@@ -47,9 +48,10 @@ def f_show():
     return shows
 
 def f_shitou(a,b,c):
-    x1=a/b
-    x2=b/c
-    x3=c/a
+    x1,x2,x3=0,0,0
+    if a !=0 and b!=0:x1=a/b
+    if c != 0 and b != 0:x2=b/c
+    if c != 0 and a != 0:x3=c/a
     return x1,x2,x3
 
 #
