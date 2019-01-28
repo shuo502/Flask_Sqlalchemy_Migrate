@@ -49,9 +49,9 @@ def f_show():
 
 def f_shitou(a,b,c):
     x1,x2,x3=0,0,0
-    if a !=0 and b!=0:x1=a/b
-    if c != 0 and b != 0:x2=b/c
-    if c != 0 and a != 0:x3=c/a
+    if a !=0 and b!=0:x1=b/a
+    if c != 0 and b != 0:x2=c/b
+    if c != 0 and a != 0:x3=a/c
     return x1,x2,x3
 
 #
