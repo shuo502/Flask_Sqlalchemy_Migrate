@@ -1,7 +1,7 @@
 #conding=utf-8
 from datetime import datetime
 from app import db
-
+import json
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True,comment="姓名")
@@ -11,6 +11,20 @@ class User(db.Model):
     __table_args__ = {
         "mysql_charset": "utf8"
     }
+    # def __init__(self, a1, a2):
+    #     self.a1 = a1
+    #     self.a2 = a2
+    # def to_json(self):
+    #     json_data = {
+    #         'id': self.id,
+    #         'a1': self.a1,
+    #         'a2': self.a2,
+    #         'a3': self.a3,
+    #         'a4': self.a4,
+    #         'a5': self.a5
+    #     }
+    #     return json.dumps(json_data,cls=DateEncoder)
+
     def __repr__(self):
         return '<User {}>'.format(self.username)
 

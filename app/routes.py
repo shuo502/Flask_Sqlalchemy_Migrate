@@ -137,7 +137,9 @@ def shitouindex():
 @app.route('/status_user/<int:istatusid>')
 def status_user(istatusid):
     istatusid = int(istatusid)
-    username = db.session.query(User.username).filter(User.id == Shitou.userid, Shitou.nb == int(istatusid)).order_by(
+    # username = db.session.query(User.username).filter(User.id == Shitou.userid, Shitou.nb == int(istatusid)).order_by(
+    #     Shitou.id.desc()).all()
+    username = db.session.query(User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(istatusid)).order_by(
         Shitou.id.desc()).all()
     s = {"userdata": username}
     # s["aa"]=['a','b','c']
@@ -147,6 +149,21 @@ def status_user(istatusid):
 
 
 # print(session.query(User, Address).filter(User.id == Address.user_id).all())
+@app.route("/changename", methods=['POST'])
+def changename():
+    r=request.form["username"].encode("utf-8")
+    if r==session.get('username'):return "zzzz"
+    print (r)
+    userid=session.get('userid')
+    t=User.query.filter_by(id=userid).first()
+    # r=r.replace(".").replace("<").replace("'").replace("/").replace("\\").replace("\"").replace("&")
+    t.username=r
+    db.session.commit()
+    session['username']=r.decode()
+    global userdata,statusid
+    userdata = db.session.query(User.username).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
+            Shitou.id.desc()).all()
+    return "successd"
 
 @app.route('/status')
 def status():
@@ -207,7 +224,8 @@ def status():
                 else:
                     print("~8")
                     status_zhuangtai = "结算"
-
+                    userdata = db.session.query(User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
+            Shitou.id.desc()).all()
                     if len(status_open) == 0:
                         status_open = fun(statusid)
                         print(status_open)
@@ -226,6 +244,8 @@ def status():
                                       ensure_ascii=False)
                 else:
                     status_zhuangtai = "结算"
+                    userdata = db.session.query(User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
+            Shitou.id.desc()).all()
                     print("~11")
                     # kai
                     shows.status = False
