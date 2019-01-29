@@ -3,80 +3,159 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title></title>
+    <style type="text/css">
+        .active {
+            background-color: black;
+            color: white;
+        }
+
+        .bk_blues {
+            background-color: #222299;
+        }
+
+        .bk_s {
+            background-color: unset;
+            color: unset;
+        }
+
+        .wh {
+            width: 100%;
+            height: auto;
+
+        }
+
+        .m {
+            border: #880700 1px solid;
+        }
+
+        .display_y {
+            border: #990099 1px solid;
+        }
+
+        .display_x {
+            border: #1b1b1b 1px solid;
+        }
+    </style>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/4.2.1/css/bootstrap-grid.css" rel="stylesheet">
     <script src="https://img.hcharts.cn/jquery/jquery-1.8.3.min.js"></script>
-    {#    <script type="text/javascript">#}
-    {#        function f() {     // 获取json数据#}
-    {#            $.getJSON(url,function(data){#}
-    {#            $.getJSON("http://127.0.0.1:5000/status", function (results) {#}
-    {#                var result=results#}
-    {#                console.log(result);#}
-    {#                if (document.getElementById("p1")) {#}
-    {#                    document.getElementById("p1").innerHTML = result.r;#}
-    {#                };#}
-    {##}
-    {#                               if (document.getElementById("statusid")) {document.getElementById("statusid").innerText = result.statusid ;};#}
-    {#                               if (document.getElementById("status_zhuangtai")) { document.getElementById("status_zhuangtai").innerText = result.status_zhuangtai ;};#}
-    {#                               if (document.getElementById("status_time")) { document.getElementById("status_time").innerText = result.status_time ;};#}
-    {#                               if (document.getElementById("statusid")) { document.getElementById("statusid").innerText = result.statusid ;};#}
-    {#                               if (document.getElementById("status_now")) { document.getElementById("status_now").innerText = result.status_now ;};#}
-    {##}
-    {#            });#}
-    {#        }     //每隔1秒自动调用方法，更新#}
-    {#        window.setInterval(f, 10);#}
-    {#    </script>#}
+    <link href="./bootstrap-o.css" rel="stylesheet">
 
 
     <script type="text/javascript">
         var t1 = "";
-        var t2="";
-        alert
+        var s_id = "";
+        var stop = 0;
+        var status_z = "";
+
         function f() {
             // 获取json数据
-
             $.getJSON("/status", function (result) {
-                document.getElementById("p1").innerHTML = result.r;
-                document.getElementById("statusid").innerText = result.statusid;
-{#                if (t1 !=result.statusid){#}
-{#                    t1=result.statusid;#}
-{#                    t2=document.getElementById("status_open").innerHTML;#}
-{##}
-{#                    document.getElementById("status_open").innerHTML = result.status_open+"</br">+t2;#}
-{##}
-{#                };#}
-                 document.getElementById("status_open").innerHTML = result.status_open;
+                var r_statusid = result.statusid;
+                var r_status_zhuangtai = result.status_zhuangtai;
+                if (r_status_zhuangtai.search("尽快选择") !== -1) {
+                    stop = 1;
+                    if (s_id !== r_statusid) {
+                        document.getElementById("statusid").innerText = r_statusid;
+                        document.getElementById("status_time").innerText = result.status_time;
+                        s_id = r_statusid;
+                    }
+                }
+                if (status_z !== r_status_zhuangtai) {
+                    document.getElementById("status_zhuangtai").innerText = r_status_zhuangtai;
+                    status_z = r_status_zhuangtai;
+                    // if (toString(r_status_zhuangtai) === toString("结算")) {
+                    if (r_status_zhuangtai.search("结算") !== -1) {
+
+                        $(".m").addClass("display_x");
+                        document.getElementById("status_open").innerHTML = r_statusid + result.status_open + '<hr/>' + document.getElementById("status_open").innerHTML;
+                        stop = 0;
+                    }
+                    // if (r_status_zhuangtai ==="尽快选择") {
+                     if (r_status_zhuangtai.search("尽快选择") !== -1) {
+
+                        stop = 1;
+
+                        $(".active").removeClass("active");
+                        $(".m").removeClass("display_x");
+                    }
+                }
+                // document.getElementById("p1").innerHTML = result.r;
                 document.getElementById("status_now").innerText = result.status_now;
-                document.getElementById("status_time").innerText = result.status_time;
-                document.getElementById("status_zhuangtai").innerText = result.status_zhuangtai;
+                document.getElementById("r").innerText = result.r;
+                var user_arr=result.userdata;
+                       for(j in user_arr) {
+                       
+                    }
             });
         }
         //每隔1秒自动调用方法，更新
         window.setInterval(f, 1000);
+        $(document).ready(function () {
+            $("#b01").click(function () {
+                // alert(document.getElementById("abc").innerHTML);
+                // $('input:radio[name=radio]').attr('checked', false);
+                $(".m").removeClass("active");
+            });
+
+            $(".m").click(function () {
+                 console.log(stop)
+                if (stop === 1) {
+
+                    $(".active").removeClass("active");
+
+                    var m = "5";
+                    mysurl = document.getElementById("statusid").innerText;
+                    console.log(mysurl);
+                    yy = "/updatebuy/";
+                    // alert(yy+mysurl);
+                    $.post(yy + mysurl, {buy: $(this).attr("id"), m: '1'}, function (data, status) {
+                        console.log(data, status);
+
+                        console.log(data,status)
+                        document.getElementById("msg").innerText = '已经确认';
+                    }, "json");
+$(this).addClass("active");
+// xml,text,json
+                }
+            });
+
+
+        });
 
     </script>
 </head>
 
 
 <body>
-statusid=
-status_zhuangtai=
-status_open=""
-status_time=""
-登陆,匿名
-状态
-<p id="status_open"></p>
-<p id="statusid"></p>
-<p id="status_time"></p>
-<p id="status_now"></p>
-<p id="status_zhuangtai"></p>
+<div class="container" id="aa">
+    <h1>用户 临时 id：{{ session.username }}</h1>
+    <h3>本期id ：
+        <div id="statusid"></div>
+    </h3>
+    <p id="r">随机</p>
+    <h4 class="p-3"><p id="status_zhuangtai"></p></h4>
+    <div class="row p-3">
+
+        <div class=" col-lg-2 p-3 wh">
+            <div id="1" class="m default ">石头</div>
+        </div>
+        <div class="col-lg-2 p-3">
+            <div id="2" class="m default">剪刀</div>
+        </div>
+        <div  class="col-lg-2 p-3">
+            <div id="3" class="m default">布</div>
+        </div>
+    </div>
+    <p class="align-content-center" id="msg">a</p>
+
+    揭晓时间：<p id="status_time"></p>
+    现在时间：<p id="status_now"></p>
+
+    <p id="status_open"></p>
 
 
-
-<div id="p1"></div>
-数据<p id="p2"></p>
-
-获取状态
+</div>
 
 
-更新选择数据
 </body>
 </html>

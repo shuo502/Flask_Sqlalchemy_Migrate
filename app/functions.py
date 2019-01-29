@@ -1,6 +1,7 @@
-import re, requests
+import re, requests,random,datetime
 from app import db
 from app.models import User,Markbook,Shitou,nbStatus
+
 
 
 def f_del():
@@ -41,6 +42,16 @@ def fun(id):
     x=[x1,x2,x3]
     return str('总计参与{} 石头{},剪刀{},布{}:{}'.format(n,a,b,c,x))
 
+def re_j(statusid,status_open,status_zhuangtai,status_time,userdata):
+    t={}
+    t['userdata']=userdata
+    t['statusid'] = str(statusid)
+    t['status_open'] = str(status_open)
+    t['status_zhuangtai'] = str(status_zhuangtai)
+    t['status_time'] = str(status_time)
+    t['status_now'] = str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    t['r'] = str(random.random())
+    return t
 
 def f_show():
     # shows = Markbook.query.all()

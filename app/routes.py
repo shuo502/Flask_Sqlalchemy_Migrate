@@ -1,24 +1,28 @@
-#conding=utf-8
+# conding=utf-8
 
-from app import app ,functions,db
+from app import app, functions, db
 from flask import session
-import os,re,requests,datetime,json,random
+import os, re, requests, datetime, json, random
 from app.functions import *
 from flask import request, session, g, redirect, url_for, abort, \
-     render_template, flash,make_response
+    render_template, flash, make_response
 from werkzeug.utils import secure_filename
 
-statusid=int(0)
-status_zhuangtai=""
-status_open=""
-status_time=""
+statusid = int(0)
+status_zhuangtai = ""
+status_open = ""
+status_time = ""
+userdata = []
+
+
 @app.route('/show')
 def show_markbook():
-    markbooks= Markbook.query.order_by(Markbook.datetimes.desc()).all()
+    markbooks = Markbook.query.order_by(Markbook.datetimes.desc()).all()
     # markbooks=Markbook.query.order_by(Markbook.RowName.desc()).first()
-    return render_template('show.html',markbooks=markbooks)
+    return render_template('show.html', markbooks=markbooks)
 
-@app.route('/insert',methods=['POST'])
+
+@app.route('/insert', methods=['POST'])
 def insert_markbook():
     markbook = Markbook()
     markbook.title = request.form['title'].encode('utf-8')
@@ -29,23 +33,22 @@ def insert_markbook():
         db.session.commit()
         # flash('New entry was successfully posted')
     return 'success'
-    #ɾ
+    # ɾ
 
 
 @app.route('/del/<int:ids>')
 def del_markbook(ids):
-    id=int(ids)
-    r=f_del()
+    id = int(ids)
+    r = f_del()
     return r
 
 
 #
 @app.route('/change/<int:ids>')
 def change_markbook(ids):
-    id=int(ids)
-    r=f_change()
+    id = int(ids)
+    r = f_change()
     return r
-
 
 
 @app.route('/cookies')
@@ -53,17 +56,17 @@ def cookies():
     ip = request.remote_addr
     name = request.cookies.get('name')  # 获取cookie
     print(request.cookies)
-    ua=request.headers.get('User-Agent')
-    response=str(ip)+"\n"+str(ua)+str(name)
-    if name==None:
-        f='登陆/游客'
+    ua = request.headers.get('User-Agent')
+    response = str(ip) + "\n" + str(ua) + str(name)
+    if name == None:
+        f = '登陆/游客'
         response = make_response(response)
         response.set_cookie('name', 'davidszhou')
     # r.set_cookie('name', '', expires=0)#删除
     return response
 
-@app.route('/login')
 
+@app.route('/login')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -78,7 +81,7 @@ def login():
                 session['user'] = ts[0].username
                 session['id'] = ts[0].id
                 session['is_admin'] = ts[0].is_admin
-                session['mail'] =  ts[0].mail
+                session['mail'] = ts[0].mail
                 print("--")
                 session['logged_in'] = True
                 flash('You were logged in')
@@ -87,6 +90,7 @@ def login():
         else:
             error = 'Invalid username'
     return render_template('login.html', error=error)
+
 
 #
 # def login():
@@ -107,19 +111,19 @@ def logins():
     session['username'] = a
     print(session.get('userkey'))
     s = User()
-    s.username=a
-    s.password="123456"
+    s.username = a
+    s.password = "123456"
     db.session.add(s)
     db.session.flush()
     session['userid'] = s.id
     db.session.commit()
-    print("create user id "+str(s.id))
+    print("create user id " + str(s.id))
     return redirect(url_for('shitouindex'))
+
 
 @app.route('/')
 def shitouindex():
-
-    if session.get('userid')is None:
+    if session.get('userid') is None:
         return redirect(url_for('logins'))
 
         # session['userid'] = a
@@ -129,109 +133,123 @@ def shitouindex():
     # userid = int(session.get['userid'])
     return render_template('shitou.html')
 
+
+@app.route('/status_user/<int:istatusid>')
+def status_user(istatusid):
+    istatusid = int(istatusid)
+    username = db.session.query(User.username).filter(User.id == Shitou.userid, Shitou.nb == int(istatusid)).order_by(
+        Shitou.id.desc()).all()
+    s = {"userdata": username}
+    # s["aa"]=['a','b','c']
+    # alluser = db.session.query(Shitou.userid).filter_by(nb=int(statusid)).order_by(Shitou.id.desc()).all()
+    # print(username)
+    return json.dumps(s, ensure_ascii=False)
+
+
+# print(session.query(User, Address).filter(User.id == Address.user_id).all())
+
 @app.route('/status')
 def status():
-    t1x=15
-    t2x=30
-    global statusid, status_open,status_zhuangtai,status_time
-    t={}
-    shows=None
-    if statusid !=0 and status_time>datetime.datetime.utcnow()  :
-        t['statusid'] = str(statusid)
-        t['status_open'] = str(status_open)
-        t['status_zhuangtai'] = str(status_zhuangtai)
-        t['status_time'] = str(status_time)
-        t['status_now'] = str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-        t['r'] = str(random.random())
-        return json.dumps(t, ensure_ascii=False)
+    t1x = 15
+    t2x = 30
 
+    global statusid, status_open, status_zhuangtai, status_time, userdata
+
+    t = {}
+    shows = None
+    print(statusid, status_open, status_zhuangtai, status_time)
+    print("----")
+    if statusid != 0 and status_time > datetime.datetime.utcnow():
+        # t['userdata']==db.session.query(User.username).filter(User.id==Shitou.userid , Shitou.nb==int(istatusid)).order_by(Shitou.id.desc()).all()
+        print("~1")
+
+        return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata), ensure_ascii=False)
     else:
-
         try:
+            print("~2")
             # shows = nbStatus.query.order_by(nbStatus.id).
             shows = nbStatus.query.filter_by(status=True).order_by(nbStatus.id.desc()).first()
             # print(shows)
         except Exception:
-            shows=nbStatus()
-            shows.status=True
+            print("~3")
+            shows = nbStatus()
+            shows.status = True
             db.session.add(shows)
             db.session.flush()
-            statusid=shows.id
+            statusid = shows.id
             db.session.commit()
-            statusid, status_open,status_zhuangtai,status_time=shows.id,"","尽快选择",shows.datetimes+datetime.timedelta(days=0, seconds=int(t1x),  minutes=0, hours=0)
+            statusid, status_open, status_zhuangtai, status_time, userdata = shows.id, "", "尽快选择", shows.datetimes + datetime.timedelta(
+                days=0, seconds=int(t1x), minutes=0, hours=0), []
             # return "开奖期数"+str(s.id)
         if shows is None:
-            s=nbStatus()
-            s.status=True
+            print("~4")
+            s = nbStatus()
+            s.status = True
             db.session.add(s)
             db.session.flush()
             db.session.commit()
-            statusid=s.id
-            statusid, status_open,status_zhuangtai,status_time=s.id,"","尽快选择",s.datetimes+datetime.timedelta(days=0, seconds=int(t1x),  minutes=0, hours=0)
+            statusid = s.id
+            statusid, status_open, status_zhuangtai, status_time, userdata = s.id, "", "尽快选择", s.datetimes + datetime.timedelta(
+                days=0, seconds=int(t1x), minutes=0, hours=0), []
             # return "xx"+str(s.id)
         elif shows.status:
-            statusid=shows.id
-            t1=shows.datetimes+datetime.timedelta(days=0, seconds=int(t1x),  minutes=0, hours=0)
-            t2=shows.datetimes+datetime.timedelta(days=0, seconds=int(t2x),  minutes=0, hours=0)
-            status_time=t1
-            if datetime.datetime.utcnow()<t2 and datetime.datetime.utcnow()>t1 :
-                if status_zhuangtai=="结算":
-                    t['statusid'] = str(statusid)
-                    t['status_open'] = str(status_open)
-                    t['status_zhuangtai'] = str(status_zhuangtai)
-                    t['status_time'] = str(status_time)
-                    t['status_now'] = str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-                    t['r'] = str(random.random())
-                    return json.dumps(t, ensure_ascii=False)
+            print("~5")
+            statusid = shows.id
+            t1 = shows.datetimes + datetime.timedelta(days=0, seconds=int(t1x), minutes=0, hours=0)
+            t2 = shows.datetimes + datetime.timedelta(days=0, seconds=int(t2x), minutes=0, hours=0)
+            status_time = t1
+            if datetime.datetime.utcnow() < t2 and datetime.datetime.utcnow() > t1:
+                print("~6")
+                if status_zhuangtai == "结算":
+                    print("~7")
+                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata),
+                                      ensure_ascii=False)
                 else:
-                    status_zhuangtai="结算"
-                    #结算
-                    if len(status_open)==0:
-                        status_open=fun(statusid)
+                    print("~8")
+                    status_zhuangtai = "结算"
+
+                    if len(status_open) == 0:
+                        status_open = fun(statusid)
                         print(status_open)
-                        shows.op=str(status_open)
+                        shows.op = str(status_open)
                         db.session.commit()
-            elif datetime.datetime.utcnow()>t2  :
-                if status_zhuangtai=="结束":
-                    t['statusid'] = str(statusid)
-                    t['status_open'] = str(status_open)
-                    t['status_zhuangtai'] = str(status_zhuangtai)
-                    t['status_time'] = str(status_time)
-                    t['status_now'] = str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-                    t['r'] = str(random.random())
-                    return json.dumps(t, ensure_ascii=False)
+                    print("~8.1")
+                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata),
+                                      ensure_ascii=False)
+
+            elif datetime.datetime.utcnow() > t2:
+                print("~9")
+                if status_zhuangtai == "结束":
+                    print("~10")
+
+                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata),
+                                      ensure_ascii=False)
                 else:
-                    status_zhuangtai="结束"
-                    #kai
-                    shows.status=False
+                    status_zhuangtai = "结算"
+                    print("~11")
+                    # kai
+                    shows.status = False
                     db.session.commit()
+
                     s = nbStatus()
                     s.status = True
                     db.session.add(s)
                     db.session.flush()
                     db.session.commit()
                     statusid = s.id
-                    statusid, status_open, status_zhuangtai, status_time = s.id, "", "尽快选择", s.datetimes + datetime.timedelta( days=0, seconds=int(t1x), minutes=0, hours=0)
-                    t['statusid'] = str(statusid)
-                    t['status_open'] = str(status_open)
-                    t['status_zhuangtai'] = str(status_zhuangtai)
-                    t['status_time'] = str(status_time)
-                    t['status_now'] = str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-                    t['r'] = str(random.random())
-                    return json.dumps(t, ensure_ascii=False)
+                    statusid, status_open, status_zhuangtai, status_time, userdata = s.id, "", "尽快选择", s.datetimes + datetime.timedelta(
+                        days=0, seconds=int(t1x), minutes=0, hours=0), []
+
+                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata),
+                                      ensure_ascii=False)
                 # return "time over"
             else:
-                status_zhuangtai="尽快选择"
+                status_zhuangtai = "尽快选择"
         # print(shows.datetimes)
-    t['statusid']=str(statusid)
-    t['status_open']=str(status_open)
-    t['status_zhuangtai']=str(status_zhuangtai)
-    t['status_time']=str(status_time)
-    t['status_now']=str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-    t['r']=str(random.random())
-    return json.dumps(t,ensure_ascii=False)
+    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time), ensure_ascii=False)
     # print((datetime.datetime.utcnow()+datetime.timedelta(days=0, seconds=0, microseconds=0, milliseconds=0, minutes=0, hours=8, weeks=0)).strftime("%Y-%m-%d %H:%M:%S"))
     # return str(shows.id)+str(shows.datetimes)
+
 
 @app.route('/clean')
 def clean():
@@ -239,34 +257,38 @@ def clean():
     return "clear succeed"
 
 
-@app.route('/updatebuy/<int:nb>',methods=['POST'])
+@app.route('/updatebuy/<int:nb>', methods=['POST'])
 def updatebuy(nb):
     '''修改 插入'''
-
-    nb=int(nb)
+    global userdata
+    nb = int(nb)
     print(nb)
-    b= request.form['buy'].encode('utf-8')
-    m= request.form['m'].encode('utf-8')
-    print(b,m)
-    userid=int(session.get('userid'))
+    print(request.form)
+    b = request.form['buy'].encode('utf-8')
+    m = request.form['m'].encode('utf-8')
+    if status_zhuangtai == "": return "结算 "
+    print(b, m)
+    userid = int(session.get('userid'))
     print(userid)
-    #提前2秒结算，停止更新
+    # 提前2秒结算，停止更新
     if nbStatus.query.filter_by(id=nb).first().status:
-        shitou = Shitou.query.filter_by(userid=userid , nb=nb).first()
+        shitou = Shitou.query.filter_by(userid=userid, nb=nb).first()
         if shitou:
-            shitou.buy =int(b)
+            shitou.buy = int(b)
             shitou.m = int(m)
             db.session.commit()
         else:
             shitou = Shitou()
-            shitou.nb=nb
+            shitou.nb = nb
             shitou.userid = userid
             shitou.buy = int(b)
             shitou.m = int(m)
             db.session.add(shitou)
             db.session.commit()
         pass
-    return "succeed "+str(m)
+        userdata = db.session.query(User.username).filter(User.id == Shitou.userid, Shitou.nb == int(nb)).order_by(
+            Shitou.id.desc()).all()
+    return "succeed " + str(m)
 
 # @app.route('/')
 # def show_entries():
