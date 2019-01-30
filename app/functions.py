@@ -40,10 +40,33 @@ def fun(id):
         a,b,c=f_shitou(x1,x2,x3)
     n=x1+x2+x3
     x=[x1,x2,x3]
-    return str('总计参与{} 石头{},剪刀{},布{}:{}'.format(n,a,b,c,x))
+    if a==b and b==c and a!=0:
+        max ="平局"
+    else:
+        if a>b:
+            if a<c:
+                max="布"
+            else:
+                if a!=0:
+                    max="石头"
+                else:
+                    max="无获胜"
+        else:
+            if b>c:
+                max="剪刀"
+            else:
+                if c != 0:
+                    max = "布"
+                else:
+                    max = "无获胜"
 
-def re_j(statusid,status_open,status_zhuangtai,status_time,userdata):
+
+
+    return str('总计参与{} 石头{},剪刀{},布{}:{} 胜利是：{}'.format(n,a,b,c,x,max))
+
+def re_j(statusid,status_open,status_zhuangtai,status_time,userdata,nowuser):
     t={}
+    t['nowuser']=nowuser
     t['userdata']=userdata
     t['statusid'] = str(statusid)
     t['status_open'] = str(status_open)
