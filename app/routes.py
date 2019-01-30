@@ -27,7 +27,7 @@ def show_markbook():
 @app.route('/insert', methods=['POST'])
 def insert_markbook():
     markbook = Markbook()
-    markbook.title = request.form['title'].encode('utf-8')
+    markbook.title = r_format(request.form['title'].encode('utf-8'))
     markbook.links = request.form['links'].encode('utf-8')
     if markbook.links:
         # print(markbook)
@@ -73,7 +73,7 @@ def cookies():
 def login():
     error = None
     if request.method == 'POST':
-        ts = User.filter(username=request.form['username'])
+        ts = User.filter(username=r_format(request.form['username']))
         if ts:
             if request.form['password'] != ts[0].password:
                 error = 'Invalid password'
@@ -155,7 +155,7 @@ def status_user(istatusid):
 # print(session.query(User, Address).filter(User.id == Address.user_id).all())
 @app.route("/changename", methods=['POST'])
 def changename():
-    r=request.form["username"].encode("utf-8")
+    r=r_format(request.form["username"].encode("utf-8"))
 
     if r==session.get('username'):return "zzzz"
     # print (r)
@@ -184,6 +184,7 @@ def changename():
 
 @app.route('/status')
 def status():
+    userbuy=""
     t1x = 15
     t2x = 25
 
@@ -315,8 +316,8 @@ def updatebuy(nb):
     nb = int(nb)
     # print(nb)
     # print(request.form)
-    b = request.form['buy'].encode('utf-8')
-    m = request.form['m'].encode('utf-8')
+    b = r_format(request.form['buy'].encode('utf-8'))
+    m = r_format(request.form['m'].encode('utf-8'))
     if status_zhuangtai == "": return "结算 "
     # print(b, m)
     userid = int(session.get('userid'))
