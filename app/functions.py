@@ -3,6 +3,21 @@ from app import db
 from app.models import User,Markbook,Shitou,nbStatus
 
 
+def r_format(st, a="all"):
+    '''all str int zh'''
+    ste=""
+    if a == "all":
+        ste = re.sub("[\"\'\!\%\[\]\,\@\&\\\\\.<]", "", st)
+        pass
+    if a == "str":
+        ste = ''.join(re.findall(r'[A-Za-z]', st))
+        pass
+    if a == "int":
+        ste = re.sub("\D", "", st)
+    if a == "zh":
+        ste = re.sub("[\"\'A-Za-z0-9\!\%\[\]\,\。\\\\<\.]", "", st)
+    # st = "hello,world!!%[545]你好234世界。。。"
+    return ste
 
 def f_del():
     user = User.query.filter_by(id=1).first()
@@ -59,8 +74,6 @@ def fun(id):
                     max = "布"
                 else:
                     max = "无获胜"
-
-
 
     return str('总计参与{} 石头{},剪刀{},布{}:{} 胜利是：{}'.format(n,a,b,c,x,max))
 
