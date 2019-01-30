@@ -1,5 +1,7 @@
 from app import app
-app.run(debug=True,host="0.0.0.0")
+app.run(port=9002)
+# app.run(debug=True,host="192.168.0.147",port=88)
+# app.run(debug=True,port=5002)
 
 # from flask import Flask
 # # from admin.views import admin

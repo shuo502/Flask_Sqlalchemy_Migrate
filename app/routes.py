@@ -128,6 +128,7 @@ def logins():
 @app.route('/')
 def shitouindex():
     if session.get('userid') is None:
+
         return redirect(url_for('logins'))
 
         # session['userid'] = a
@@ -155,7 +156,7 @@ def status_user(istatusid):
 # print(session.query(User, Address).filter(User.id == Address.user_id).all())
 @app.route("/changename", methods=['POST'])
 def changename():
-    r=r_format(request.form["username"].encode("utf-8"))
+    r=r_format(request.form["username"]).encode("utf-8")
 
     if r==session.get('username'):return "zzzz"
     # print (r)
@@ -316,8 +317,8 @@ def updatebuy(nb):
     nb = int(nb)
     # print(nb)
     # print(request.form)
-    b = r_format(request.form['buy'].encode('utf-8'))
-    m = r_format(request.form['m'].encode('utf-8'))
+    b = r_format(request.form['buy']).encode('utf-8')
+    m = r_format(request.form['m']).encode('utf-8')
     if status_zhuangtai == "": return "结算 "
     # print(b, m)
     userid = int(session.get('userid'))

@@ -1,10 +1,12 @@
+#conding=utf-8
 import re, requests,random,datetime
 from app import db
 from app.models import User,Markbook,Shitou,nbStatus
 
 
 def r_format(st, a="all"):
-    '''all str int zh'''
+    print(st)
+    # '''all str int zh'''
     ste=""
     if a == "all":
         ste = re.sub("[\"\'\!\%\[\]\,\@\&\\\\\.<]", "", st)
@@ -16,6 +18,7 @@ def r_format(st, a="all"):
         ste = re.sub("\D", "", st)
     if a == "zh":
         ste = re.sub("[\"\'A-Za-z0-9\!\%\[\]\,\。\\\\<\.]", "", st)
+    print(ste)
     # st = "hello,world!!%[545]你好234世界。。。"
     return ste
 
