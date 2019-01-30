@@ -1,5 +1,5 @@
 from app import app
-app.run(port=9002)
+app.run(port=9001)
 # app.run(debug=True,host="192.168.0.147",port=88)
 # app.run(debug=True,port=5002)
 
