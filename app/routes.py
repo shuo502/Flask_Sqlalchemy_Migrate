@@ -30,7 +30,7 @@ def insert_markbook():
     markbook.title = request.form['title'].encode('utf-8')
     markbook.links = request.form['links'].encode('utf-8')
     if markbook.links:
-        print(markbook)
+        # print(markbook)
         db.session.add(markbook)
         db.session.commit()
         # flash('New entry was successfully posted')
@@ -57,7 +57,7 @@ def change_markbook(ids):
 def cookies():
     ip = request.remote_addr
     name = request.cookies.get('name')  # 获取cookie
-    print(request.cookies)
+    # print(request.cookies)
     ua = request.headers.get('User-Agent')
     response = str(ip) + "\n" + str(ua) + str(name)
     if name == None:
@@ -79,15 +79,15 @@ def login():
                 error = 'Invalid password'
                 pass
             else:
-                print(ts[0])
+                # print(ts[0])
                 session['user'] = ts[0].username
                 session['id'] = ts[0].id
                 session['is_admin'] = ts[0].is_admin
                 session['mail'] = ts[0].mail
-                print("--")
+                # print("--")
                 session['logged_in'] = True
                 flash('You were logged in')
-                print(session.get('user'))
+                # print(session.get('user'))
                 return redirect(url_for('show_entries'))
         else:
             error = 'Invalid username'
@@ -111,7 +111,7 @@ def login():
 def logins():
     a = int(random.randint(100000, 999999))
     session['username'] = str(a)
-    print(session.get('userkey'))
+    # print(session.get('userkey'))
     s = User()
     s.username = str(a)
     s.password = "123456"
@@ -119,7 +119,7 @@ def logins():
     db.session.flush()
     session['userid'] = s.id
     db.session.commit()
-    print("create user id " + str(s.id))
+    # print("create user id " + str(s.id))
     return redirect(url_for('shitouindex'))
 
 
@@ -158,7 +158,7 @@ def changename():
     r=request.form["username"].encode("utf-8")
 
     if r==session.get('username'):return "zzzz"
-    print (r)
+    # print (r)
     userid=session.get('userid')
     t=User.query.filter_by(id=userid).first()
     # r=r.replace(".").replace("<").replace("'").replace("/").replace("\\").replace("\"").replace("&")
@@ -205,21 +205,21 @@ def status():
                 del nowuser_dict[s]
     t = {}
     shows = None
-    print(statusid, status_open, status_zhuangtai, status_time)
-    print("----")
+    # print(statusid, status_open, status_zhuangtai, status_time)
+    # print("----")
     if statusid != 0 and status_time > datetime.datetime.utcnow():
         # t['userdata']==db.session.query(User.username).filter(User.id==Shitou.userid , Shitou.nb==int(istatusid)).order_by(Shitou.id.desc()).all()
-        print("~1")
+        # print("~1")
 
         return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata,nowuser), ensure_ascii=False)
     else:
         try:
-            print("~2")
+            # print("~2")
             # shows = nbStatus.query.order_by(nbStatus.id).
             shows = nbStatus.query.filter_by(status=True).order_by(nbStatus.id.desc()).first()
             # print(shows)
         except Exception:
-            print("~3")
+            # print("~3")
             shows = nbStatus()
             shows.status = True
             db.session.add(shows)
@@ -230,7 +230,7 @@ def status():
                 days=0, seconds=int(t1x), minutes=0, hours=0), []
             # return "开奖期数"+str(s.id)
         if shows is None:
-            print("~4")
+            # print("~4")
             s = nbStatus()
             s.status = True
             db.session.add(s)
@@ -241,35 +241,35 @@ def status():
                 days=0, seconds=int(t1x), minutes=0, hours=0), []
             # return "xx"+str(s.id)
         elif shows.status:
-            print("~5")
+            # print("~5")
             statusid = shows.id
             t1 = shows.datetimes + datetime.timedelta(days=0, seconds=int(t1x), minutes=0, hours=0)
             t2 = shows.datetimes + datetime.timedelta(days=0, seconds=int(t2x), minutes=0, hours=0)
             status_time = t1
             if datetime.datetime.utcnow() < t2 and datetime.datetime.utcnow() > t1:
-                print("~6")
+                # print("~6")
                 if status_zhuangtai == "结算":
-                    print("~7")
+                    # print("~7")
                     return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata,nowuser),
                                       ensure_ascii=False)
                 else:
-                    print("~8")
+                    # print("~8")
                     status_zhuangtai = "结算"
                     userdata = db.session.query(User.id,User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
             Shitou.id.desc()).all()
                     if len(status_open) == 0:
                         status_open = fun(statusid)
-                        print(status_open)
+                        # print(status_open)
                         shows.op = str(status_open)
                         db.session.commit()
-                    print("~8.1")
+                    # print("~8.1")
                     return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata,nowuser),
                                       ensure_ascii=False)
 
             elif datetime.datetime.utcnow() > t2:
-                print("~9")
+                # print("~9")
                 if status_zhuangtai == "结束":
-                    print("~10")
+                    # print("~10")
 
                     return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata,nowuser),
                                       ensure_ascii=False)
@@ -277,7 +277,7 @@ def status():
                     status_zhuangtai = "结算"
                     userdata = db.session.query(User.id,User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
             Shitou.id.desc()).all()
-                    print("~11")
+                    # print("~11")
                     # kai
                     shows.status = False
                     db.session.commit()
@@ -313,14 +313,14 @@ def updatebuy(nb):
     '''修改 插入'''
     global userdata
     nb = int(nb)
-    print(nb)
-    print(request.form)
+    # print(nb)
+    # print(request.form)
     b = request.form['buy'].encode('utf-8')
     m = request.form['m'].encode('utf-8')
     if status_zhuangtai == "": return "结算 "
-    print(b, m)
+    # print(b, m)
     userid = int(session.get('userid'))
-    print(userid)
+    # print(userid)
     # 提前2秒结算，停止更新
     if nbStatus.query.filter_by(id=nb).first().status:
         shitou = Shitou.query.filter_by(userid=userid, nb=nb).first()
