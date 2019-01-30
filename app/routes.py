@@ -2,7 +2,7 @@
 
 from app import app, functions, db
 from flask import session
-import os, re, requests, datetime, json, random
+import os, re, requests, datetime, json, random,time
 from app.functions import *
 from flask import request, session, g, redirect, url_for, abort, \
     render_template, flash, make_response
@@ -13,6 +13,8 @@ status_zhuangtai = ""
 status_open = ""
 status_time = ""
 userdata = []
+nowuser = []
+nowuser_dict = {}
 
 
 @app.route('/show')
@@ -108,10 +110,10 @@ def login():
 @app.route('/logins')
 def logins():
     a = int(random.randint(100000, 999999))
-    session['username'] = a
+    session['username'] = str(a)
     print(session.get('userkey'))
     s = User()
-    s.username = a
+    s.username = str(a)
     s.password = "123456"
     db.session.add(s)
     db.session.flush()
@@ -119,6 +121,8 @@ def logins():
     db.session.commit()
     print("create user id " + str(s.id))
     return redirect(url_for('shitouindex'))
+
+
 
 
 @app.route('/')
@@ -139,7 +143,7 @@ def status_user(istatusid):
     istatusid = int(istatusid)
     # username = db.session.query(User.username).filter(User.id == Shitou.userid, Shitou.nb == int(istatusid)).order_by(
     #     Shitou.id.desc()).all()
-    username = db.session.query(User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(istatusid)).order_by(
+    username = db.session.query(User.id,User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(istatusid)).order_by(
         Shitou.id.desc()).all()
     s = {"userdata": username}
     # s["aa"]=['a','b','c']
@@ -152,6 +156,7 @@ def status_user(istatusid):
 @app.route("/changename", methods=['POST'])
 def changename():
     r=request.form["username"].encode("utf-8")
+
     if r==session.get('username'):return "zzzz"
     print (r)
     userid=session.get('userid')
@@ -159,19 +164,45 @@ def changename():
     # r=r.replace(".").replace("<").replace("'").replace("/").replace("\\").replace("\"").replace("&")
     t.username=r
     db.session.commit()
+
+    nowuser.remove(session.get('username'))
+    del nowuser_dict[session.get('username')]
+
     session['username']=r.decode()
+
     global userdata,statusid
-    userdata = db.session.query(User.username).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
+
+
+
+
+    userdata = db.session.query(User.id ,User.username).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
             Shitou.id.desc()).all()
     return "successd"
+
+
+
 
 @app.route('/status')
 def status():
     t1x = 15
-    t2x = 30
+    t2x = 25
 
-    global statusid, status_open, status_zhuangtai, status_time, userdata
+    global statusid, status_open, status_zhuangtai, status_time, userdata,nowuser,nowuser_dict
 
+    usernames=str(session.get("username"))
+    t_time = int(time.time())
+
+    nowuser_dict[usernames] = t_time
+    if usernames:
+        if usernames not in nowuser:
+            nowuser.append(usernames)
+
+    if len(nowuser)>0:
+        for i in nowuser:
+            if int(nowuser_dict[i])+10 < int(t_time):
+                s=str(i)
+                nowuser.remove(s)
+                del nowuser_dict[s]
     t = {}
     shows = None
     print(statusid, status_open, status_zhuangtai, status_time)
@@ -180,7 +211,7 @@ def status():
         # t['userdata']==db.session.query(User.username).filter(User.id==Shitou.userid , Shitou.nb==int(istatusid)).order_by(Shitou.id.desc()).all()
         print("~1")
 
-        return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata), ensure_ascii=False)
+        return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata,nowuser), ensure_ascii=False)
     else:
         try:
             print("~2")
@@ -219,12 +250,12 @@ def status():
                 print("~6")
                 if status_zhuangtai == "结算":
                     print("~7")
-                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata),
+                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata,nowuser),
                                       ensure_ascii=False)
                 else:
                     print("~8")
                     status_zhuangtai = "结算"
-                    userdata = db.session.query(User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
+                    userdata = db.session.query(User.id,User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
             Shitou.id.desc()).all()
                     if len(status_open) == 0:
                         status_open = fun(statusid)
@@ -232,7 +263,7 @@ def status():
                         shows.op = str(status_open)
                         db.session.commit()
                     print("~8.1")
-                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata),
+                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata,nowuser),
                                       ensure_ascii=False)
 
             elif datetime.datetime.utcnow() > t2:
@@ -240,11 +271,11 @@ def status():
                 if status_zhuangtai == "结束":
                     print("~10")
 
-                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata),
+                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata,nowuser),
                                       ensure_ascii=False)
                 else:
                     status_zhuangtai = "结算"
-                    userdata = db.session.query(User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
+                    userdata = db.session.query(User.id,User.username,Shitou.buy).filter(User.id == Shitou.userid, Shitou.nb == int(statusid)).order_by(
             Shitou.id.desc()).all()
                     print("~11")
                     # kai
@@ -260,13 +291,13 @@ def status():
                     statusid, status_open, status_zhuangtai, status_time, userdata = s.id, "", "尽快选择", s.datetimes + datetime.timedelta(
                         days=0, seconds=int(t1x), minutes=0, hours=0), []
 
-                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata),
+                    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time, userdata,nowuser),
                                       ensure_ascii=False)
                 # return "time over"
             else:
                 status_zhuangtai = "尽快选择"
         # print(shows.datetimes)
-    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time), ensure_ascii=False)
+    return json.dumps(re_j(statusid, status_open, status_zhuangtai, status_time,userdata,nowuser), ensure_ascii=False)
     # print((datetime.datetime.utcnow()+datetime.timedelta(days=0, seconds=0, microseconds=0, milliseconds=0, minutes=0, hours=8, weeks=0)).strftime("%Y-%m-%d %H:%M:%S"))
     # return str(shows.id)+str(shows.datetimes)
 
@@ -306,7 +337,7 @@ def updatebuy(nb):
             db.session.add(shitou)
             db.session.commit()
         pass
-        userdata = db.session.query(User.username).filter(User.id == Shitou.userid, Shitou.nb == int(nb)).order_by(
+        userdata = db.session.query(User.id,User.username).filter(User.id == Shitou.userid, Shitou.nb == int(nb)).order_by(
             Shitou.id.desc()).all()
     return "succeed " + str(m)
 

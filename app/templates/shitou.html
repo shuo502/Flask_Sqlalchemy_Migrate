@@ -35,10 +35,17 @@
         .display_x {
             border: #1b1b1b 1px solid;
         }
+
+        .vsb {
+            border: #da0800 2px solid;
+        }
+
     </style>
     <link href="https://cdn.bootcss.com/twitter-bootstrap/4.2.1/css/bootstrap-grid.css" rel="stylesheet">
     <script src="https://img.hcharts.cn/jquery/jquery-1.8.3.min.js"></script>
-    {#    <link href="./bootstrap-o.css" rel="stylesheet">#}
+    {#
+    <link href="./bootstrap-o.css" rel="stylesheet">
+    #}
 
 
     <script type="text/javascript">
@@ -47,7 +54,10 @@
         var stop = 0;
         var status_z = "";
         var user_arr = [];
-        var temp_i = ""
+        var temp_i = "";
+        var hisarr = [];
+        var historys = "";
+
         function f() {
             // 获取json数据
             $.getJSON("/status", function (result) {
@@ -60,86 +70,108 @@
                         s_id = r_statusid;
                     }
                 }
+
                 if (status_z !== r_status_zhuangtai) {
-                    document.getElementById("status_zhuangtai").innerText = r_status_zhuangtai;
                     status_z = r_status_zhuangtai;
                     // if (toString(r_status_zhuangtai) === toString("结算")) {
                     if (r_status_zhuangtai.search("结算") !== -1) {
-
-                        $(".m").addClass("display_x");
-                        document.getElementById("status_open").innerHTML = r_statusid + result.status_open + '<hr/>' + document.getElementById("status_open").innerHTML;
                         stop = 0;
+                        document.getElementById("status_zhuangtai").innerText = r_status_zhuangtai + "结算中无法操作";
+                        $("#c2").addClass('vsb');
+                        $("#c3").removeClass("vsb");
+                        $("#c1").removeClass('vsb');
+                        $(".m").addClass("display_x");
+
+                        var ts1 = "";
+                        if (hisarr.length > 6) {
+                            hisarr.pop()
+                        } else {
+                            hisarr.push(r_statusid + result.status_open + '<hr/>')
+                        }
+                        for (var ix = 0; ix < hisarr.length; ix++) {
+                            ts1 = hisarr[ix] + ts1
+                        }
+                        document.getElementById("status_open").innerHTML = ts1;
+
                     }
                     // if (r_status_zhuangtai ==="尽快选择") {
                     if (r_status_zhuangtai.search("尽快选择") !== -1) {
-                        temp_i=""
+                        document.getElementById("status_zhuangtai").innerText = r_status_zhuangtai + "请选择 石头剪刀 布 中的一个";
+                        temp_i = "";
                         stop = 1;
-
+                        $("#c1").addClass('vsb');
+                        $("#c2").removeClass('vsb');
                         $(".active").removeClass("active");
                         $(".m").removeClass("display_x");
                     }
                 }
+
                 // document.getElementById("p1").innerHTML = result.r;
-                document.getElementById("status_now").innerText = result.status_now;
-                document.getElementById("r").innerText = result.r;
+
+
                 var ts = result.userdata;
-                console.log(ts,user_arr);
-                if (ts.sort().toString()!==user_arr.sort().toString()) {
+                console.log(ts, user_arr);
+                if (ts.sort().toString() !== user_arr.sort().toString()) {
                     console.log("--xxx--");
                     user_arr = ts;
+                    if (ts.length === 0) {
+                        document.getElementById("history").innerHTML = "<b>最近一把 记录</b>" +historys;
+                    }
                     var temp_s = "";
-{#                    temp_s = temp_i;#}
                     for (var i = 0; i < ts.length; i++) {
-                        var tx=["","石头","剪刀","布"];
-                        if(ts[i][1]){
-                             temp_s = "用户:"+ts[i][0] +"---出的是---"+ tx[Number(ts[i][1])] + "<hr>" + temp_s;
+                        var tx = ["", "石头", "剪刀", "布"];
+                        if (ts[i][2]) {
+                            temp_s = "用户:[id:" + ts[i][0] + "]" + ts[i][1] + "---出的是---" + tx[Number(ts[i][2])] + "<hr>" + temp_s;
                         }
-                        else{
-                            temp_s = "用户:"+ts[i][0]+ "<hr>" + temp_s;
+                        else {
+                            temp_s = "用户:[id:" + ts[i][0] + "]" + ts[i][1] + "<hr>" + temp_s;
                         }
                         //data[i]表示获得第i个json对象即JSONObject
                         //data[i]通过.字段名称即可获得指定字段的值
-
-                        {#                        console.log();#}
                     }
-                    document.getElementById("user-data").innerHTML = temp_s;
-{#                    temp_i = temp_s;#}
+
+                    document.getElementById("user-data").innerHTML = "<b>已经选择的用户</b> <hr>" + temp_s;
+                    historys = s_id+"<hr>"+temp_s;
+
                 }
 
-
-                {#                if (user_arr !== result.userdata) {#}
-                {#                    console.log(user_arr,ts);#}
-                {#                    user_arr = result.userdata;#}
-                {#                    for (var j in user_arr) {#}
-                {#                        console.log(j);#}
-                {#                    }#}
-                {#                }#}
+                var ta = result.nowuser;
+                var temp_ta = "|";
+                if (ta) {
+                    for (var m = 0; m < ta.length; m++) {
+                        temp_ta = " | " + ta[m] + temp_ta;
+                    }
+                }
+                document.getElementById("nowuser").innerText = temp_ta;
+                document.getElementById("status_now").innerText = result.status_now;
+                // document.getElementById("r").innerText = result.r;
 
             });
         }
+
         //每隔1秒自动调用方法，更新
         window.setInterval(f, 1000);
 
-function changenames() {
-    var username= $('#username').attr("value");
-    alert(username);
-      url='/changename';
-              $.post(url, {username:username}, function (data, status) {
-                        console.log(data, status);
-                    }, "json");
-}
+        function changenames() {
+            var username = $('#username').attr("value");
+            alert(username);
+            url = '/changename';
+            $.post(url, {username: username}, function (data, status) {
+                console.log(data, status);
+            }, "json");
+        }
 
         $(document).ready(function () {
-{#        $('changename').click(function(){#}
-  $("#username").blur(function(){
 
-     var  username= $("#username").attr("value");
-      url='/changename';
-              $.post(url, {username:username}, function (data, status) {
-                        console.log(data, status);
-                    }, "json");
+            $("#username").blur(function () {
 
-  });
+                var username = $("#username").attr("value");
+                url = '/changename';
+                $.post(url, {username: username}, function (data, status) {
+                    console.log(data, status);
+                }, "json");
+
+            });
 
             $("#b01").click(function () {
                 // alert(document.getElementById("abc").innerHTML);
@@ -148,20 +180,20 @@ function changenames() {
             });
 
             $(".m").click(function () {
-                console.log(stop)
+                console.log(stop);
                 if (stop === 1) {
 
                     $(".active").removeClass("active");
-
+                    $("#c3").addClass("vsb");
+                    $("#c1").removeClass("vsb");
                     var m = "5";
                     mysurl = document.getElementById("statusid").innerText;
                     console.log(mysurl);
                     yy = "/updatebuy/";
                     // alert(yy+mysurl);
                     $.post(yy + mysurl, {buy: $(this).attr("id"), m: '1'}, function (data, status) {
-                        console.log(data, status);
 
-                        console.log(data, status)
+                        console.log(data, status);
                         document.getElementById("msg").innerText = '已经确认';
                     }, "json");
                     $(this).addClass("active");
@@ -178,14 +210,22 @@ function changenames() {
 
 <body>
 <div class="container" id="aa">
+    在线用户:<span id="nowuser"></span>
+    <hr>
+    选择 时间 15秒 结算等待时间10秒 一局时间25秒，结算期间无法操作。
+    <div class="row">
+        <h2>用户 临时名字 ：<input type="text" id="username" onFocus=" " onBlur=" " value="{{ session.username }}"
+                            alt="点击修改名字">点击可修改名字</input></h2></div>
+    <div class="row p-0  m-0">
+        <h3 class="p-0  m-0">本期id ： <span id="statusid"></span>
+        </h3>
+    </div>
 
-    <h1>用户 临时 id：<input type="text" id="username" onFocus=" " onBlur=" "  value="{{ session.username }}">  </h1>
-<div class="row"><h3>本期id ： <div id="statusid"></div></h3></div>
+    <h4 id="status_zhuangtai" class="p-0 m-0"></h4>
 
-    <p id="r">随机</p>
-    <h4 id="status_zhuangtai" class=""></h4>
     <div class="row p-1">
-        <div class="col-lg-8 row">
+        <div id="c1" class="col-lg-8 row p-3">
+
             <div class=" col-lg-4 p-1 wh">
                 <div id="1" class="m default ">石头</div>
             </div>
@@ -196,17 +236,30 @@ function changenames() {
                 <div id="3" class="m default">布</div>
             </div>
         </div>
-        <div class="col-lg-4">
+        <div id="c2" class="col-lg-4">
             <div id="user-data"></div>
         </div>
-
     </div>
-    <p class="align-content-center" id="msg">a</p>
+    <div id="c3">
+        揭晓时间：<span id="status_time"></span>
+    </div>
+    <div>
+        现在时间：<span id="status_now"></span>
+    </div>
 
-    揭晓时间：<p id="status_time"></p>
-    现在时间：<p id="status_now"></p>
+    <div class="row">
+        <div class="col-lg-5">
 
-    <p id="status_open"></p>
+
+            <p id="status_open"></p>
+        </div>
+        <div class="col-lg-7">
+            <div id="history">
+
+            </div>
+
+        </div>
+    </div>
 
 
 </div>
