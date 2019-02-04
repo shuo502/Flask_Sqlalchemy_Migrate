@@ -60,9 +60,8 @@
         function f() {
             // 获取json数据
             $.getJSON("/status", function (result) {
-
                 var r_statusid = result.statusid;
-                if (historys.length>2 &  s_id!==r_statusid) {
+                if (historys.length>2 &&  s_id!==r_statusid) {
                     document.getElementById("history").innerHTML = "<b>最近一把 记录</b>" + historys;
                 }
                 var r_status_zhuangtai = result.status_zhuangtai;
@@ -121,9 +120,11 @@
 
                     var temp_s = "";
                     for (var i = 0; i < ts.length; i++) {
-                        var tx = ["", "石头", "剪刀", "布"];
+                        var tx = ["比你厉害的", "石头", "剪刀", "布"];
                         if (ts[i][2]) {
-                            temp_s = "用户:[id:" + ts[i][0] + "]" + ts[i][1] + "---出的是---" + tx[Number(ts[i][2])] + "<hr>" + temp_s;
+                                var robotint =Math.floor(Math.random()*4);
+{#                 document.getElementById("r").innerHTML = robotint;#}
+                            temp_s = "用户:" + ts[i][1] +"[id:" + ts[i][0] + "]出的是---" + tx[Number(ts[i][2])] + "---机器人出的是--(" + tx[robotint]+" ) <hr>" + temp_s;
                             historys = s_id + "<hr>" + temp_s;
                         }
                         else {
@@ -252,8 +253,7 @@
 
     <div class="row">
         <div class="col-lg-5">
-
-
+<p>多人游戏结果：</p><hr>
             <p id="status_open"></p>
         </div>
         <div class="col-lg-7">
