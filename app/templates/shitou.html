@@ -45,7 +45,6 @@
     <script src="https://img.hcharts.cn/jquery/jquery-1.8.3.min.js"></script>
 
 
-
     <script type="text/javascript">
         var t1 = "";
         var s_id = "";
@@ -59,7 +58,11 @@
         function f() {
             // 获取json数据
             $.getJSON("/status", function (result) {
+
                 var r_statusid = result.statusid;
+                if (historys.length>2 &  s_id!==r_statusid) {
+                    document.getElementById("history").innerHTML = "<b>最近一把 记录</b>" + historys;
+                }
                 var r_status_zhuangtai = result.status_zhuangtai;
                 if (r_status_zhuangtai.search("尽快选择") !== -1) {
                     if (s_id !== r_statusid) {
@@ -107,20 +110,19 @@
                 // document.getElementById("p1").innerHTML = result.r;
 
 
+
                 var ts = result.userdata;
                 console.log(ts, user_arr);
                 if (ts.sort().toString() !== user_arr.sort().toString()) {
                     console.log("--xxx--");
                     user_arr = ts;
-                    if (ts.length === 0) {
-                        document.getElementById("history").innerHTML = "<b>最近一把 记录</b>" +historys;
-                    }
+
                     var temp_s = "";
                     for (var i = 0; i < ts.length; i++) {
                         var tx = ["", "石头", "剪刀", "布"];
                         if (ts[i][2]) {
                             temp_s = "用户:[id:" + ts[i][0] + "]" + ts[i][1] + "---出的是---" + tx[Number(ts[i][2])] + "<hr>" + temp_s;
-                            historys = s_id+"<hr>"+temp_s;
+                            historys = s_id + "<hr>" + temp_s;
                         }
                         else {
                             temp_s = "用户:[id:" + ts[i][0] + "]" + ts[i][1] + "<hr>" + temp_s;

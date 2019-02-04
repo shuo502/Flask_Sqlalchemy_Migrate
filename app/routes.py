@@ -121,7 +121,20 @@ def logins():
     db.session.commit()
     # print("create user id " + str(s.id))
     return redirect(url_for('shitouindex'))
+    
+@app.route('/wx_login')
+def wx_login():
+    a = int(random.randint(100000, 999999))
+    session['username'] = str(a)
+    # print(session.get('userkey'))
+    s = User()
+    s.username = str(a)
+    s.password = "123456"
+    db.session.add(s)
+    db.session.flush()
 
+    # print("create user id " + str(s.id))
+    return "login succeed"
 
 
 
@@ -185,6 +198,7 @@ def changename():
 
 @app.route('/status')
 def status():
+
     userbuy=""
     t1x = 15
     t2x = 25
